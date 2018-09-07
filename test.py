@@ -5,13 +5,14 @@ import sys
 import argparse
 import requests
 import traceback
+import time
 
 bot = CQHttp(api_root='')
 pigeon= False
 group_list=(253370800,781269903,808234958)
 power_list=(895853325,)
 welcomeList=[]
-
+timestamp=time.time()
 welcome_newbie= "Hi，欢迎加入 CNSS 2018 招新群 XD \n\n "\
                 "请先阅读以下事项：\n\n" \
                 "* 夏令营平台: summer.cnss.io\n\n"\
@@ -84,6 +85,8 @@ def menu(context):
 
 @bot.on_message('private','group')
 def handle_msg(context):
+    global timestamp
+    global welcomeList
     is_group=bool(context.get('group_id'))
     if is_group:
         at_me = '[CQ:at,qq=%d]' % 1751065040  # 机器人被@
@@ -98,6 +101,15 @@ def handle_msg(context):
             return {'reply': context['message'], 'at_sender': False}
         if "鸽" in context['message']:
             return {'reply':"咕咕咕",'at_sender':False}
+        if (time.time()-timestamp)>=600 and len(welcomeList)!=0:
+            welcomMessage = ''
+            for each in welcomeList:
+                at = ('[CQ:at,qq=%d] ' % each)
+                welcomMessage += at
+            group = context.get('group_id')
+            bot.send_group_msg(group_id=group, message=welcomMessage+welcome_newbie)
+            welcomeList.clear()
+            timestamp=time.time()
         return
 
 @bot.on_notice('group_increase')
